@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, ActivityIndicator, Modal } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Modal } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import Barcode from '@kichiyaki/react-native-barcode-generator';
-import { Linking } from 'react-native';
+import Slider from '@react-native-community/slider';
 
 import i18nInstance from './src/i18n';
 import { useTranslation } from 'react-i18next';
-import { fetchProductName } from './src/services/api';
 import { CartState } from './src/types';
 
 export default function App() {
@@ -18,15 +17,17 @@ export default function App() {
   const [tiempoRestante, setTiempoRestante] = useState<number>(3);
   const [codigoVisible, setCodigoVisible] = useState<string | null>(null);
   const [escaneando, setEscaneando] = useState<boolean>(false);
-  const [procesando, setProcesando] = useState<boolean>(false);
 
   // MENU STATES
   const [menuVisible, setMenuVisible] = useState<boolean>(false);
-  const [aboutVisible, setAboutVisible] = useState<boolean>(false);
+  const [tutorialVisible, setTutorialVisible] = useState<boolean>(true); 
+  const [opcionesVisible, setOpcionesVisible] = useState<boolean>(false);
+  
+  // CONFIG STATES
+  const [velocidadFlasheo, setVelocidadFlasheo] = useState<number>(500);
 
   // Language toggling 
   const toggleLanguage = () => {
-
     const currentLang = i18nInstance.language;
     const nextLang = currentLang === 'es' ? 'en' : 'es';
     i18nInstance.changeLanguage(nextLang);
@@ -34,24 +35,17 @@ export default function App() {
   };
 
   // Scanning logic
-  const manejarEscaneo = async (codigo: string) => {
+  const manejarEscaneo = (codigo: string) => {
     setEscaneando(false);
-    setProcesando(true);
-    let nombre = "Unknown Product";
-    if (!carrito[codigo]) {
-      nombre = await fetchProductName(codigo);
-    } else {
-      nombre = carrito[codigo].name;
-    }
+    
     setCarrito(prev => ({
       ...prev,
       [codigo]: {
         barcode: codigo,
-        name: nombre,
+        name: codigo, 
         quantity: (prev[codigo]?.quantity || 0) + 1
       }
     }));
-    setProcesando(false);
   };
 
   const modificarCantidad = (codigo: string, delta: number) => {
@@ -86,7 +80,7 @@ export default function App() {
           for (let i = 0; i < cantidad; i++) {
             if (!montado) return;
             setCodigoVisible(codigo);
-            await delay(1200);
+            await delay(velocidadFlasheo); // Usa velocidad variable
             setCodigoVisible(null);
             await delay(400);
           }
@@ -98,7 +92,7 @@ export default function App() {
     };
     ejecutarFlasheo();
     return () => { montado = false; };
-  }, [faseApp]);
+  }, [faseApp, velocidadFlasheo]);
 
 
   // Camera render
@@ -106,9 +100,9 @@ export default function App() {
     if (!permission?.granted) {
       return (
         <View style={styles.center}>
-          <Text style={styles.titulo}>{t('camera_permission')}</Text>
+          <Text style={styles.titulo}>{t('camera_permission', 'Permiso de cámara requerido')}</Text>
           <TouchableOpacity style={styles.btnAccion} onPress={requestPermission}>
-            <Text style={styles.btnText}>{t('grant_permission')}</Text>
+            <Text style={styles.btnText}>{t('grant_permission', 'Otorgar permiso')}</Text>
           </TouchableOpacity>
         </View>
       );
@@ -124,13 +118,13 @@ export default function App() {
           <View style={styles.huecoCamara} />
         </View>
         <TouchableOpacity style={styles.btnCancelarCamara} onPress={() => setEscaneando(false)}>
-          <Text style={styles.btnText}>{t('cancel')}</Text>
+          <Text style={styles.btnText}>{t('cancel', 'Cancelar')}</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  // main menu render
+  // Main menu render
   return (
     <View style={styles.container}>
       {faseApp === 0 && (
@@ -143,7 +137,7 @@ export default function App() {
               disabled={Object.keys(carrito).length === 0}
               onPress={() => setFaseApp(1)}
             >
-              <Text style={styles.btnText}>{t('checkout_button')}</Text>
+              <Text style={styles.btnText}>{t('checkout_button', 'Pagar')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.menuIcon} onPress={() => setMenuVisible(true)}>
@@ -151,15 +145,13 @@ export default function App() {
             </TouchableOpacity>
           </View>
 
-          {procesando && <ActivityIndicator size="large" color="#2196F3" style={{ marginVertical: 10 }} />}
-
           {/* Product list */}
           <ScrollView style={styles.lista}>
             {Object.values(carrito).map((producto) => (
               <View key={producto.barcode} style={styles.itemFila}>
                 <View style={styles.itemInfo}>
                   <Text style={styles.itemNombre} numberOfLines={1}>{producto.name}</Text>
-                  <Text style={styles.itemCodigo} numberOfLines={1}>{t('code')}: {producto.barcode}</Text>
+                  <Text style={styles.itemCodigo} numberOfLines={1}>{t('code', 'Cód')}: {producto.barcode}</Text>
                 </View>
                 
                 <View style={styles.controlesCantidad}>
@@ -177,7 +169,7 @@ export default function App() {
 
           {/* FOOTER: Scan button */}
           <TouchableOpacity style={styles.btnAccion} onPress={() => setEscaneando(true)}>
-            <Text style={styles.btnText}>{t('scan_button')}</Text>
+            <Text style={styles.btnText}>{t('scan_button', 'Escanear Código')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -186,43 +178,70 @@ export default function App() {
       <Modal visible={menuVisible} animationType="fade" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalMenu}>
-            <Text style={styles.titulo}>{t('menu')}</Text>
+            <Text style={styles.titulo}>{t('menu', 'Menú')}</Text>
             
-            <TouchableOpacity style={styles.btnMenuOption} onPress={toggleLanguage}>
-              <Text style={styles.menuOptionText}>{t('change_lang')}</Text>
+            <TouchableOpacity style={styles.btnMenuOption} onPress={() => { setMenuVisible(false); setTutorialVisible(true); }}>
+              <Text style={styles.menuOptionText}>{t('tutorial', 'Cómo usar')}</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity style={styles.btnMenuOption} onPress={() => { setMenuVisible(false); setAboutVisible(true); }}>
-              <Text style={styles.menuOptionText}>{t('about_me')}</Text>
+
+            <TouchableOpacity style={styles.btnMenuOption} onPress={() => { setMenuVisible(false); setOpcionesVisible(true); }}>
+              <Text style={styles.menuOptionText}>{t('advanced_options', 'Opciones Avanzadas')}</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.btnMenuOption} onPress={toggleLanguage}>
+              <Text style={styles.menuOptionText}>{t('change_lang', 'Cambiar Idioma')}</Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={[styles.btnAccion, { backgroundColor: '#666', marginTop: 20 }]} onPress={() => setMenuVisible(false)}>
-              <Text style={styles.btnText}>{t('close')}</Text>
+              <Text style={styles.btnText}>{t('close', 'Cerrar')}</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
-{/* --- MODAL: about me --- */}
-      <Modal visible={aboutVisible} animationType="slide" transparent={true}>
+      {/* --- MODAL: Tutorial --- */}
+      <Modal visible={tutorialVisible} animationType="slide" transparent={true}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.titulo}>{t('about_me')}</Text>
+            <Text style={styles.titulo}>{t('tutorial', 'Cómo usar')}</Text>
+            <Text style={styles.textoGeneral}>
+              1. Usa el botón "Escanear" para agregar productos al carrito.{"\n\n"}
+              2. Presiona "Pasar por Caja" para mostrar los codigos de barra rapidamente.{"\n\n"}
+              3. Acerca la pantalla de tu celular al lector de códigos de barra del supermercado.
+            </Text>
+            <TouchableOpacity style={[styles.btnAccion, { marginTop: 30, width: '100%' }]} onPress={() => setTutorialVisible(false)}>
+              <Text style={styles.btnText}>{t('got_it', 'Entendido')}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* --- MODAL: Opciones Avanzadas --- */}
+      <Modal visible={opcionesVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.titulo}>{t('advanced_options', 'Opciones Avanzadas')}</Text>
             
-            <Text style={styles.aboutText}>{t('about_text')}</Text>
+            <Text style={[styles.textoGeneral, {marginTop: 20}]}>
+              {t('speed_title', 'Velocidad de muestra')}: {velocidadFlasheo}ms
+            </Text>
+            <Slider
+              style={{width: 250, height: 40, marginTop: 10}}
+              minimumValue={100}
+              maximumValue={1000}
+              step={100}
+              value={velocidadFlasheo}
+              onValueChange={setVelocidadFlasheo}
+              minimumTrackTintColor="#2196F3"
+              maximumTrackTintColor="#ccc"
+              thumbTintColor="#2196F3"
+            />
+            <Text style={{fontSize: 12, color: '#666', textAlign: 'center'}}>
+              {t('speed_desc', 'Ajusta qué tan rápido pasan los códigos frente al lector.')}
+            </Text>
 
-            <TouchableOpacity onPress={() => Linking.openURL('https://link.mercadopago.com.ar/veloxarg')}>
-              <Text style={{ color: '#009EE3', fontSize: 18, fontWeight: 'bold', marginTop: 15 }}>{t('link_mp')}</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={() => Linking.openURL('https://ko-fi.com/santirona')}>
-              <Text style={{ color: '#FF5E5B', fontSize: 18, fontWeight: 'bold', marginTop: 15 }}>{t('link_kofi')}</Text>
-            </TouchableOpacity>
-
-            <Text style={{ marginTop: 20, fontStyle: 'italic', color: '#666' }}>Velox Open Source Project</Text>
-
-            <TouchableOpacity style={[styles.btnAccion, { marginTop: 30 }]} onPress={() => setAboutVisible(false)}>
-              <Text style={styles.btnText}>{t('cancel')}</Text>
+            <TouchableOpacity style={[styles.btnAccion, { marginTop: 30, width: '100%' }]} onPress={() => setOpcionesVisible(false)}>
+              <Text style={styles.btnText}>{t('close', 'Cerrar')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -232,13 +251,13 @@ export default function App() {
       {/* Showing phases */}
       {faseApp === 1 && (
         <View style={styles.center}>
-          <Text style={styles.subtitulo}>{t('prepare_reader')}</Text>
+          <Text style={styles.subtitulo}>{t('prepare_reader', 'Prepárate')}</Text>
           <Text style={styles.contadorTexto}>{tiempoRestante}</Text>
         </View>
       )}
       {faseApp === 2 && (
         <View style={styles.center}>
-          <Text style={styles.subtitulo}>{t('scanning')}</Text>
+          <Text style={styles.subtitulo}>{t('scanning', 'Escaneando...')}</Text>
           <View style={{ height: 250, justifyContent: 'center', backgroundColor: '#FFFFFF', padding: 20, borderRadius: 10 }}>
             {codigoVisible && (
               <Barcode 
@@ -269,6 +288,7 @@ const styles = StyleSheet.create({
   titulo: { fontSize: 24, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
   subtitulo: { fontSize: 24, fontWeight: 'bold', marginBottom: 30 },
   contadorTexto: { fontSize: 100, fontWeight: 'bold', color: 'red' },
+  textoGeneral: { fontSize: 16, color: '#333', lineHeight: 24 },
   
   // Buttons
   btnAccion: { backgroundColor: '#2196F3', padding: 18, borderRadius: 10 },
@@ -292,10 +312,9 @@ const styles = StyleSheet.create({
   modalContent: { width: '90%', backgroundColor: '#fff', padding: 30, borderRadius: 15, alignItems: 'center' },
   btnMenuOption: { paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#eee' },
   menuOptionText: { fontSize: 18, textAlign: 'center', color: '#333' },
-  aboutText: { fontSize: 16, textAlign: 'center', lineHeight: 24, marginTop: 10 },
 
   // Camera
-  mascaraCamara: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', alignItems: 'center' },
+  mascaraCamara: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0)', justifyContent: 'center', alignItems: 'center' },
   huecoCamara: { width: 300, height: 150, backgroundColor: 'transparent', borderColor: 'white', borderWidth: 2, borderRadius: 10 },
   btnCancelarCamara: { position: 'absolute', bottom: 50, left: 50, right: 50, backgroundColor: '#F44336', padding: 15, borderRadius: 10 }
 });

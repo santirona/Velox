@@ -19,7 +19,7 @@ and the app displays the barcodes in rapid succession for the checkout scanner t
 1. Clone this repository:
 
    ```bash
-   git clone https://github.com/your-username/velox.git
+   git clone https://github.com/santirona/velox.git
    ```
 2. Open the project in Android Studio.
 3. Sync the Gradle dependencies.

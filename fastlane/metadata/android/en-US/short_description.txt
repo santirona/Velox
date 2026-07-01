@@ -1,0 +1,2 @@
+A fast barcode scanner designed to speed up supermarket checkout. Users scan multiple items in their
+cart, and the app displays each barcode in rapid succession for the checkout scanner to read.

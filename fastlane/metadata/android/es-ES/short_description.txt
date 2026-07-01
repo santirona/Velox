@@ -1,0 +1,3 @@
+Escáner de códigos de barra rápido diseñado para agilizar el paso por caja en supermercados.
+ El usuario escanea múltiples productos en su carrito y la aplicación muestra los códigos en
+ rápida sucesión al lector de la caja.

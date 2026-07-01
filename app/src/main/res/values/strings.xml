@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Velox</string>
+    <string name="btn_checkout">Pasar por Caja</string>
+    <string name="btn_scan">Escanear</string>
+    <string name="menu_title">Menú</string>
+    <string name="menu_how_to_use">Cómo usar</string>
+    <string name="menu_advanced">Opciones Avanzadas</string>
+    <string name="menu_language">Change to English 🇺🇸</string>
+    <string name="tutorial_title">Cómo usar</string>
+    <string name="tutorial_msg">1. Usa botón Escanear acepta los permisos de camara y escanea el codigo de barras del producto
+        .\n2. Presiona Pasar por Caja para mostrar los codigos de barra recopilados rapidamente
+        .\n3. Acerca pantalla al lector de codigo de barras para leer todos tus productos rapidamente.</string>
+    <string name="btn_understood">Entendido</string>
+    <string name="btn_close">Cerrar</string>
+    <string name="btn_save">Guardar</string>
+    <string name="speed_title">Velocidad de muestra (ms)</string>
+    <string name="scan_prompt">Escaneando producto...</string>
+    <string name="prefix_code">Cód: </string>
+    <string name="btn_clear_all">Borrar Todo</string>
+    <string name="toast_empty_cart">No hay productos escaneados</string>
+</resources>

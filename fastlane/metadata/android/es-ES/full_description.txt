@@ -1,0 +1,45 @@
+## Flujo de funcionamiento de la aplicación
+
+Al iniciar la aplicación por primera vez, el usuario accede a un tutorial interactivo de tres pasos
+que explica el flujo de uso y las principales funcionalidades.
+
+La pantalla principal presenta tres acciones principales:
+
+* Pasar por caja
+* Escanear
+* Menú
+
+La sección Menú permite acceder a la configuración de la aplicación, incluyendo:
+
+* Visualizar nuevamente el tutorial de uso.
+* Configurar la velocidad de reproducción de los códigos de barras durante el proceso de checkout,
+permitiendo una presentación más rápida o más lenta según la compatibilidad del lector del supermercado.
+* Cambiar el idioma de la interfaz entre español e inglés.
+
+### Escaneo de productos
+
+Al seleccionar Escanear, la aplicación solicita los permisos necesarios para acceder a la cámara
+del dispositivo. Una vez concedidos, detecta automáticamente códigos de barras compatibles y almacena
+cada lectura de forma local.
+
+En la pantalla principal se muestra un listado de los productos escaneados junto con su código de barras.
+Para enriquecer la información del producto, la aplicación consulta las siguientes bases de datos públicas:
+
+* https://world.openfoodfacts.org/api/v0/product/$barcode.json
+* https://world.openbeautyfacts.org/api/v0/product/$barcode.json
+* https://world.openproductsfacts.org/api/v0/product/$barcode.json
+
+Si el código de barras existe en alguna de estas bases de datos, el producto se muestra utilizando su
+nombre comercial. En caso contrario, se conserva únicamente el número del código de barras.
+
+Cada producto permite modificar su cantidad mediante los botones "-" y "-", evitando la necesidad
+de escanear repetidamente un mismo artículo.
+
+### Proceso de checkout
+
+Una vez finalizado el escaneo de todos los productos, el usuario selecciona Pasar por caja.
+
+La aplicación inicia una cuenta regresiva de tres segundos y, a continuación, reproduce automáticamente
+todos los códigos de barras almacenados en rápida sucesión y en el orden correspondiente. Este mecanismo
+permite que el lector de códigos del supermercado capture los productos de manera continua, reduciendo
+significativamente el tiempo requerido para completar el proceso de checkout.

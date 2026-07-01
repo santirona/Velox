@@ -1,0 +1,21 @@
+<resources>
+    <string name="app_name">Velox</string>
+    <string name="btn_checkout">Checkout</string>
+    <string name="btn_scan">Scan</string>
+    <string name="menu_title">Menu</string>
+    <string name="menu_how_to_use">How to use</string>
+    <string name="menu_advanced">Advanced Options</string>
+    <string name="menu_language">Cambiar a Español 🇦🇷</string>
+    <string name="tutorial_title">How to use</string>
+    <string name="tutorial_msg">1. Use Scan button, grant camera permissions and scan the bar code of the product
+        .\n2. Press Checkout to show all the bar codes previously scanned.
+        \n3. Show screen to bar code reader to scan all your products quickly.</string>
+    <string name="btn_understood">Understood</string>
+    <string name="btn_close">Close</string>
+    <string name="btn_save">Save</string>
+    <string name="speed_title">Display speed (ms)</string>
+    <string name="scan_prompt">Scanning product...</string>
+    <string name="prefix_code">Code: </string>
+    <string name="btn_clear_all">Clear All</string>
+    <string name="toast_empty_cart">No scanned products found</string>
+</resources>

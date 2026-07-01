@@ -1,0 +1,43 @@
+## Application Workflow
+
+When the application is launched for the first time, users are presented with a three-step interactive
+onboarding tutorial that explains the application's workflow and core features.
+
+The main screen provides three primary actions:
+
+* Checkout
+* Scan
+* Menu
+
+The Menu section provides access to the application's settings, including:
+
+* Replaying the onboarding tutorial.
+* Configuring the barcode playback speed during the checkout process, allowing faster or slower
+presentation depending on the supermarket scanner's compatibility.
+* Switching the application language between English and Spanish.
+
+### Product Scanning
+
+When the user selects Scan, the application requests permission to access the device's camera.
+Once granted, compatible barcodes are automatically detected and stored locally.
+
+The main screen displays a list of scanned products along with their barcode numbers. To provide
+additional product information, the application queries the following public databases:
+
+* https://world.openfoodfacts.org/api/v0/product/$barcode.json
+* https://world.openbeautyfacts.org/api/v0/product/$barcode.json
+* https://world.openproductsfacts.org/api/v0/product/$barcode.json
+
+If a matching product is found in any of these databases, the product is displayed using its
+ commercial name. Otherwise, only the barcode number is shown.
+
+Each product includes "+" and "−" controls to adjust its quantity, eliminating the need to scan
+the same item multiple times.
+
+### Checkout Process
+
+After all products have been scanned, the user selects Checkout.
+
+The application starts a three-second countdown and then automatically displays all stored barcodes
+in rapid succession and in sequence. This enables the supermarket barcode scanner to capture each
+product continuously, significantly reducing the time required to complete the checkout process.
